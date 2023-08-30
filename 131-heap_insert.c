@@ -122,7 +122,7 @@ heap_t *get_position(const heap_t *root)
 }
 
 /**
- * swap_tree_node_with_parent - Swaps a node in a \
+ * swap_with_parent - Swaps a node in a \
  * max binary heap tree with its parent.
  * @node: A pointer to the node's address.
  * @root: A pointer to the root of the tree.
