@@ -102,7 +102,7 @@ int perfect_binary_tree(const binary_tree_t *tree)
 /**
  * binary_tree_is_heap - checks if a binary tree is a valid Max Binary Heap
  * @tree: tree to check
- * Return: 1 is it is or 0 if not
+ * Return: 1 it is is or 0 if not
  */
 int binary_tree_is_heap(const binary_tree_t *tree)
 {
