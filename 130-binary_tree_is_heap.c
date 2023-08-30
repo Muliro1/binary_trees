@@ -61,7 +61,7 @@ int perfect_tree(const binary_tree_t *tree)
 	{
 		left = 1 + perfect_tree(tree->left);
 		right = 1 + perfect_tree(tree->right);
-		if (right == left && right!= 0 && left != 0)
+		if (right == left && right != 0 && left != 0)
 			return (right);
 		return (0);
 	}
