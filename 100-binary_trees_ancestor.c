@@ -31,5 +31,5 @@ binary_tree_t *binary_trees_ancestor(const binary_tree_t *first,
 	{
 		return (binary_trees_ancestor(i, second));
 	}
-	return(binary_trees_ancestor(i, j));
+	return (binary_trees_ancestor(i, j));
 }
