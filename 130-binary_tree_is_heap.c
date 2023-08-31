@@ -1,142 +1,173 @@
 #include "binary_trees.h"
+#include <limits.h>
 
 /**
- * binary_tree_height - Function that measures the height of a binary tree
- * @tree: tree to go through
- * Return: the height
+ * queue_item_2 - Adds an item to a queue.
+ * @queue_h: A pointer to the queue's head.
+ * @queue_t: A pointer to the queue's tail.
+ * @n: A pointer to the queue's size value.
+ * @item: The item to add to the queue.
  */
-
-size_t binary_tree_height(const binary_tree_t *tree)
+void queue_item_2(binary_tree_t **queue_h, binary_tree_t **queue_t,
+	int *n, void *item)
 {
-	size_t left = 0;
-	size_t right = 0;
+	binary_tree_t *new_node;
+	binary_tree_t *node = (binary_tree_t *)item;
 
-	if (tree == NULL)
+	if ((queue_h != NULL) && (queue_t != NULL))
 	{
-		return (0);
+		new_node = malloc(sizeof(binary_tree_t));
+		if (new_node == NULL)
+			return;
+		new_node->left = *queue_t;
+		new_node->right = NULL;
+		new_node->n = (node != NULL ? node->n : -1);
+		new_node->parent = node;
+		if (*queue_h == NULL)
+			*queue_h = new_node;
+		if (*queue_t != NULL)
+			(*queue_t)->right = new_node;
+		*queue_t = new_node;
+		if (n != NULL)
+			(*n)++;
 	}
-	else
+}
+
+/**
+ * unqueue_item_2 - Removes an item from a queue.
+ * @queue_h: A pointer to the queue's head.
+ * @queue_t: A pointer to the queue's tail.
+ * @n: A pointer to the queue's size value.
+ *
+ * Return: The value of the removed queue.
+ */
+binary_tree_t *unqueue_item_2(binary_tree_t **queue_h,
+	binary_tree_t **queue_t, int *n)
+{
+	binary_tree_t *tmp0;
+	binary_tree_t *tmp1;
+	binary_tree_t *node = NULL;
+
+	if ((queue_h != NULL) && (queue_t != NULL))
 	{
-		if (tree->left == NULL && tree->right == NULL)
-			return (tree->parent != NULL);
-		if (tree)
+		tmp0 = *queue_h;
+		if (tmp0 != NULL)
 		{
-			left = tree->left ? 1 + binary_tree_height(tree->left) : 0;
-			right = tree->right ? 1 + binary_tree_height(tree->right) : 0;
+			node = tmp0->parent;
+			if (tmp0->right != NULL)
+			{
+				tmp1 = tmp0->right;
+				tmp1->left = NULL;
+				*queue_h = tmp1;
+				free(tmp0);
+			}
+			else
+			{
+				free(tmp0);
+				*queue_h = NULL;
+				*queue_t = NULL;
+			}
+			if (n != NULL)
+				(*n)--;
 		}
-		return ((left > right) ? left : right);
-		}
+	}
+	return (node);
 }
 
 /**
- * binary_tree_balance - Measures balance factor of a binary tree
- * @tree: tree to go through
- * Return: balanced factor
+ * binary_tree_is_complete - Checks if a binary tree is complete.
+ * @tree: The binary tree.
+ *
+ * Return: 1 if the tree is complete, otherwise 0.
  */
-int binary_tree_balance(const binary_tree_t *tree)
+int binary_tree_is_complete(const binary_tree_t *tree)
 {
-	int right = 0, left = 0, total = 0;
+	binary_tree_t *queue_head = NULL;
+	binary_tree_t *queue_tail = NULL;
+	binary_tree_t *current = NULL;
+	int n = 0, stop = 0;
+	int is_complete = 0;
 
-	if (tree)
+	if (tree != NULL)
 	{
-		left = ((int)binary_tree_height(tree->left));
-		right = ((int)binary_tree_height(tree->right));
-		total = left - right;
-	}
-	return (total);
-}
-
-/**
- * perfect_tree - function that says if a tree is perfect or not
- * it has to be the same quantity of levels in left as right, and also
- * each node has to have 2 nodes or none
- * @tree: tree to check
- * Return: 0 if is not a perfect or other number that is the level of height
- */
-int perfect_tree(const binary_tree_t *tree)
-{
-	int left = 0, right = 0;
-
-	if (tree->left && tree->right)
-	{
-		left = 1 + perfect_tree(tree->left);
-		right = 1 + perfect_tree(tree->right);
-		if (right == left && right != 0 && left != 0)
-			return (right);
-		return (0);
-	}
-	else if (!tree->left && !tree->right)
-	{
-		return (1);
-	}
-	else
-	{
-		return (0);
-	}
-}
-
-/**
- * perfect_binary_tree - perfect or not a tree
- * @tree: tree to check
- * Return: 1 is it is or 0 if not
- */
-int perfect_binary_tree(const binary_tree_t *tree)
-{
-	int result = 0;
-
-	if (tree == NULL)
-	{
-		return (0);
-	}
-	else
-	{
-		result = perfect_tree(tree);
-		if (result != 0)
+		is_complete = 1;
+		queue_item_2(&queue_head, &queue_tail, &n, (void *)tree);
+		while (n > 0)
 		{
-			return (1);
+			current = queue_head;
+			if (current->parent == NULL)
+			{
+				stop = 1;
+			}
+			else
+			{
+				if (stop == 1)
+				{
+					is_complete = 0;
+					break;
+				}
+				else if (current->parent != NULL)
+				{
+					queue_item_2(
+						&queue_head, &queue_tail, &n, (void *)(current->parent->left)
+					);
+					queue_item_2(
+						&queue_head, &queue_tail, &n, (void *)(current->parent->right)
+					);
+				}
+			}
+			unqueue_item_2(&queue_head, &queue_tail, &n);
 		}
-		return (0);
+		while (n > 0)
+			unqueue_item_2(&queue_head, &queue_tail, &n);
+	}
+	return (is_complete);
+}
+
+/**
+ * binary_heap_check - Checks if a binary tree is a max binary heap.
+ * @tree: The binary tree.
+ * @max: The maximum value in the binary tree.
+ * @is_max_heap: A pointer to the tree's max binary heap flag.
+ */
+void binary_heap_check(const binary_tree_t *tree, int max, int *is_max_heap)
+{
+	if (tree != NULL)
+	{
+		if (tree->n <= max)
+		{
+			binary_heap_check(tree->left, tree->n, is_max_heap);
+			binary_heap_check(tree->right, tree->n, is_max_heap);
+		}
+		else
+		{
+			if (is_max_heap != NULL)
+			{
+				*is_max_heap = 0;
+			}
+		}
 	}
 }
 
 /**
- * binary_tree_is_heap - checks if a binary tree is a valid Max Binary Heap
- * @tree: tree to check
- * Return: 1 it is is or 0 if not
+ * binary_tree_is_heap - Checks if a binary tree is a max binary heap.
+ * @tree: The binary tree.
+ *
+ * Return: 1 if the tree is a max binary heap, otherwise 0.
  */
 int binary_tree_is_heap(const binary_tree_t *tree)
 {
-	int bval;
+	int complete = 0;
+	int max_bin_heap = 0;
 
-	if (tree == NULL)
+	if (tree != NULL)
 	{
-		return (0);
+		complete = binary_tree_is_complete(tree);
+		if (complete == 1)
+		{
+			max_bin_heap = 1;
+			binary_heap_check(tree, INT_MAX, &max_bin_heap);
+		}
 	}
-	if (tree->left && tree->left->n > tree->n)
-	{
-		return (0);
-	}
-	if (tree->right && tree->right->n > tree->n)
-	{
-		return (0);
-	}
-	if (perfect_binary_tree(tree))
-	{
-		return (1);
-	}
-	bval = binary_tree_balance(tree);
-	if (bval == 0)
-	{
-		return (perfect_binary_tree(tree->left)
-			&& binary_tree_is_heap(tree->right));
-	}
-	if (bval == 1)
-	{
-		return (binary_tree_is_heap(tree->left)
-			&& perfect_binary_tree(tree->right));
-	}
-	else
-	{
-		return (0);
-	}
+	return (max_bin_heap);
 }
